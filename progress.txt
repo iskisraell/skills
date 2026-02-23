@@ -1,3 +1,4 @@
 2026-02-23 - Initialized skills repository and bootstrapping docs.
 2026-02-23 - Added worktree-feature-execution skill with references and automation scripts.
 2026-02-23 - Added orchestration flow script and PR body template automation.
+2026-02-23 - Hardened skill for Windows runners, PR body guarantees, JSON outputs, and semantic versioning (0.2.0).

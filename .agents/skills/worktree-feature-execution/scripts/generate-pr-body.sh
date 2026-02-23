@@ -12,6 +12,7 @@ Options:
   --risk <level>        Risk level: low|medium|high (default: medium)
   --issue <number>      Optional issue number for "Closes #<number>"
   --summary <text>      Optional extra summary bullet
+  --json                Emit a JSON result payload
   -h, --help            Show this help message
 EOF
 }
@@ -22,6 +23,7 @@ output=".git/PR_BODY.md"
 risk="medium"
 issue=""
 summary=""
+json=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -48,6 +50,10 @@ while [[ $# -gt 0 ]]; do
     --summary)
       summary="$2"
       shift 2
+      ;;
+    --json)
+      json=1
+      shift
       ;;
     -h|--help)
       usage
@@ -155,9 +161,14 @@ mkdir -p "${output_dir}"
   fi
 } > "${output}"
 
-echo "body_file=${output}"
-echo "branch=${branch}"
-echo "base_ref=${base_ref}"
-echo "commit_count=${commit_count}"
-echo "changed_files=${changed_files}"
-echo "status=ok"
+if [[ ${json} -eq 1 ]]; then
+  printf '{"body_file":"%s","branch":"%s","base_ref":"%s","commit_count":"%s","changed_files":"%s","status":"ok"}\n' \
+    "${output}" "${branch}" "${base_ref}" "${commit_count}" "${changed_files}"
+else
+  echo "body_file=${output}"
+  echo "branch=${branch}"
+  echo "base_ref=${base_ref}"
+  echo "commit_count=${commit_count}"
+  echo "changed_files=${changed_files}"
+  echo "status=ok"
+fi

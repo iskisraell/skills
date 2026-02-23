@@ -4,6 +4,36 @@ set -euo pipefail
 pr=""
 method="squash"
 queue=0
+json=0
+
+usage() {
+  cat <<'EOF'
+Usage: merge-pr.sh [options]
+
+Options:
+  --pr <number|url>    PR number or URL (defaults to current branch PR)
+  --method <method>    squash|merge|rebase (default: squash)
+  --queue              Enable auto-merge / merge queue mode
+  --json               Emit a JSON result payload
+  -h, --help           Show this help message
+EOF
+}
+
+emit_result() {
+  local pr="$1"
+  local method="$2"
+  local queue="$3"
+
+  if [[ ${json} -eq 1 ]]; then
+    printf '{"pr":"%s","method":"%s","queued":"%s","status":"ok"}\n' "${pr}" "${method}" "${queue}"
+    return
+  fi
+
+  echo "pr=${pr}"
+  echo "method=${method}"
+  echo "queued=${queue}"
+  echo "status=ok"
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -19,8 +49,17 @@ while [[ $# -gt 0 ]]; do
       queue=1
       shift
       ;;
+    --json)
+      json=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
     *)
       echo "ERROR: unknown argument: $1" >&2
+      usage >&2
       exit 1
       ;;
   esac
@@ -99,7 +138,4 @@ else
   gh pr merge "${pr}" "${merge_flag}" --delete-branch
 fi
 
-echo "pr=${pr}"
-echo "method=${method}"
-echo "queued=${queue}"
-echo "status=ok"
+emit_result "${pr}" "${method}" "${queue}"

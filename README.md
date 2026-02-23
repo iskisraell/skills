@@ -6,10 +6,18 @@ Reusable skills and automation playbooks for agent-driven development.
 
 - `worktree-feature-execution`: orchestrates isolated worktrees, feature implementation flow, PR creation, and merge/cleanup automation with `git` + `gh`.
 
+Current version: `0.2.0`
+
 ## Install globally
 
 ```bash
 npx skills add iskisraell/skills --skill worktree-feature-execution -g -a opencode
+```
+
+## Update globally
+
+```bash
+npx skills add iskisraell/skills --skill worktree-feature-execution -g -a opencode -y
 ```
 
 ## Orchestration example
@@ -20,6 +28,12 @@ bash .agents/skills/worktree-feature-execution/scripts/run-feature-flow.sh \
   --base "current-branch" \
   --pr-base "main" \
   --summary "Improve retry reliability for transient failures"
+```
+
+## Windows quick check
+
+```cmd
+.agents\skills\worktree-feature-execution\scripts\windows\doctor.cmd
 ```
 
 ## Layout

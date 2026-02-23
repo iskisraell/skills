@@ -2,6 +2,32 @@
 set -euo pipefail
 
 base="main"
+json=0
+
+usage() {
+  cat <<'EOF'
+Usage: sync-worktree.sh [options]
+
+Options:
+  --base <branch>  Base branch to rebase onto (default: main)
+  --json           Emit a JSON result payload
+  -h, --help       Show this help message
+EOF
+}
+
+emit_result() {
+  local branch="$1"
+  local base="$2"
+
+  if [[ ${json} -eq 1 ]]; then
+    printf '{"branch":"%s","base":"%s","status":"ok"}\n' "${branch}" "${base}"
+    return
+  fi
+
+  echo "branch=${branch}"
+  echo "base=${base}"
+  echo "status=ok"
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -9,8 +35,17 @@ while [[ $# -gt 0 ]]; do
       base="$2"
       shift 2
       ;;
+    --json)
+      json=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
     *)
       echo "ERROR: unknown argument: $1" >&2
+      usage >&2
       exit 1
       ;;
   esac
@@ -44,6 +79,4 @@ if ! git rebase "origin/${base}"; then
   exit 1
 fi
 
-echo "branch=${branch}"
-echo "base=${base}"
-echo "status=ok"
+emit_result "${branch}" "${base}"

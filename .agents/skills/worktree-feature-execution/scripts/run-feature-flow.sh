@@ -29,10 +29,32 @@ Template options:
 
 Setup options:
   --setup <mode>        auto|none|"<custom command>" (default: auto)
+  --json                Emit a JSON result payload
 
 Other:
   -h, --help            Show this help message
 EOF
+}
+
+emit_result() {
+  local worktree_path="$1"
+  local branch="$2"
+  local pr_url="$3"
+  local merged="$4"
+
+  if [[ ${json} -eq 1 ]]; then
+    printf '{"worktree_path":"%s","branch":"%s","pr_url":"%s","merged":"%s","status":"ok"}\n' \
+      "${worktree_path}" "${branch}" "${pr_url}" "${merged}"
+    return
+  fi
+
+  echo "worktree_path=${worktree_path}"
+  echo "branch=${branch}"
+  if [[ -n "${pr_url}" ]]; then
+    echo "pr_url=${pr_url}"
+  fi
+  echo "merged=${merged}"
+  echo "status=ok"
 }
 
 feature=""
@@ -52,6 +74,7 @@ body_file=""
 risk="medium"
 issue=""
 summary=""
+json=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -123,6 +146,10 @@ while [[ $# -gt 0 ]]; do
       summary="$2"
       shift 2
       ;;
+    --json)
+      json=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -169,11 +196,17 @@ fi
 create_output="$(cd "${repo_root}" && "${create_cmd[@]}")"
 worktree_path="$(extract_value "${create_output}" "worktree_path")"
 branch="$(extract_value "${create_output}" "branch")"
+gitignore_modified="$(extract_value "${create_output}" "gitignore_modified")"
+gitignore_path="$(extract_value "${create_output}" "gitignore_path")"
 
 if [[ -z "${worktree_path}" ]] || [[ -z "${branch}" ]]; then
   echo "ERROR: failed to parse worktree creation output" >&2
   echo "DEBUG: ${create_output}" >&2
   exit 1
+fi
+
+if [[ "${gitignore_modified}" == "1" ]]; then
+  echo "INFO: create-worktree.sh modified .gitignore at ${gitignore_path}" >&2
 fi
 
 if [[ "${setup}" == "auto" ]]; then
@@ -185,13 +218,18 @@ elif [[ "${setup}" != "none" ]]; then
 fi
 
 if [[ ${sync} -eq 1 ]]; then
-  (cd "${worktree_path}" && bash "${script_dir}/sync-worktree.sh" --base "${pr_base}")
+  sync_cmd=(bash "${script_dir}/sync-worktree.sh" --base "${pr_base}")
+  if [[ ${json} -eq 1 ]]; then
+    sync_cmd+=(--json)
+  fi
+  sync_output="$(cd "${worktree_path}" && "${sync_cmd[@]}")"
+  if [[ ${json} -eq 0 ]] && [[ -n "${sync_output}" ]]; then
+    echo "${sync_output}" >&2
+  fi
 fi
 
 if [[ ${open_pr} -eq 0 ]]; then
-  echo "worktree_path=${worktree_path}"
-  echo "branch=${branch}"
-  echo "status=ok"
+  emit_result "${worktree_path}" "${branch}" "" "0"
   exit 0
 fi
 
@@ -235,8 +273,4 @@ if [[ ${merge} -eq 1 ]]; then
   (cd "${worktree_path}" && "${merge_cmd[@]}") >/dev/null
 fi
 
-echo "worktree_path=${worktree_path}"
-echo "branch=${branch}"
-echo "pr_url=${pr_url}"
-echo "merged=${merge}"
-echo "status=ok"
+emit_result "${worktree_path}" "${branch}" "${pr_url}" "${merge}"

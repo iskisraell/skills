@@ -12,6 +12,8 @@ skills/
     skills/
       worktree-feature-execution/
         SKILL.md
+        VERSION
+        CHANGELOG.md
         references/
           branch-naming.md
           conflict-playbook.md
@@ -26,6 +28,9 @@ skills/
           preflight-check.sh
           run-feature-flow.sh
           sync-worktree.sh
+          windows/
+            doctor.cmd
+            run-feature-flow.cmd
   AGENTS.md
   AGENT-EDITABLE.md
   PROJECT-OVERVIEW.md
@@ -39,6 +44,7 @@ skills/
 ## Module map
 
 - `SKILL.md`: trigger phrases, workflow contract, safety gates, edge cases.
+- `VERSION` + `CHANGELOG.md`: semantic versioning and release history.
 - `references/*.md`: deeper policy and operational playbooks.
 - `scripts/*.sh`: deterministic execution helpers for git/gh automation.
 

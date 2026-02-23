@@ -7,6 +7,11 @@ stack:
 runtime:
   default: bun
   notes: Bun-first environment; scripts are shell-based.
+skills:
+  worktree-feature-execution:
+    version: 0.2.0
+    changelog: .agents/skills/worktree-feature-execution/CHANGELOG.md
+    version_file: .agents/skills/worktree-feature-execution/VERSION
 conventions:
   harness: AGENTS.md
   worktree:

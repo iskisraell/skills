@@ -1,7 +1,7 @@
 ---
 name: worktree-feature-execution
 description: This skill should be used when the user asks to "implement a feature in an isolated worktree", "create a worktree from the current project branch", "open a PR from worktree changes", "merge feature PRs into main", "run multiple agents in parallel worktrees", or "handle worktree merge conflicts and incompatibilities".
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Worktree Feature Execution
@@ -44,6 +44,10 @@ Use bundled scripts in `scripts/` for deterministic execution:
 - `scripts/merge-pr.sh` - merge pull request with checks and queue support.
 - `scripts/cleanup-worktree.sh` - safe worktree removal and prune.
 - `scripts/run-feature-flow.sh` - orchestration wrapper for preflight to PR (and optional merge).
+- `scripts/windows/run-feature-flow.cmd` - Windows wrapper for safer script invocation.
+- `scripts/windows/doctor.cmd` - Windows environment diagnostics for `git`, `gh`, and `bash`.
+
+All core scripts support machine-readable output using `--json`.
 
 ## One-Command Orchestration
 
@@ -66,6 +70,12 @@ Optional flags:
 - `--setup auto|none|"<custom command>"` to control setup behavior.
 - `--issue <number>` to append closing issue reference in PR body.
 
+Windows invocation example:
+
+```cmd
+.agents\skills\worktree-feature-execution\scripts\windows\run-feature-flow.cmd --feature "add billing retries"
+```
+
 ## Standard Workflow
 
 ### 1) Preflight
@@ -82,6 +92,8 @@ Verify:
 - Base branch can be resolved.
 - `origin` remote exists.
 - `gh` is installed and authenticated.
+- `git` and `gh` executable paths resolve correctly.
+- Current shell context is reported for diagnostics.
 
 If authentication or permissions fail, stop and report the blocking condition.
 
@@ -103,6 +115,11 @@ Behavior:
 - Ensure root is gitignored when local to repository.
 - Create `feat/<slug>` branch if missing, or reuse existing branch.
 - Create worktree path `<root>/<slug>`.
+
+Useful flags:
+
+- `--no-gitignore-edit` to fail instead of mutating `.gitignore`.
+- `--print-ignore-patch` to display the exact ignore line before apply.
 
 ### 3) Implement Feature
 
@@ -146,7 +163,9 @@ Behavior:
 
 - Push branch with upstream tracking if needed.
 - Reuse open PR when one already exists.
+- Auto-generate PR body file when missing.
 - Create PR when missing.
+- Validate PR body is non-empty after create/update.
 - Return PR URL.
 
 ### 5a) Generate PR Body Template
@@ -212,6 +231,34 @@ Execution order:
 
 For shared contracts (API/schema/event payloads), include compatibility notes in PR body and require contract tests.
 
+### Serialization Rule
+
+Do not run mutating git commands in parallel. Serialize all operations that write git state (`add`, `commit`, `stash`, `checkout`, `worktree add/remove`, `rebase`, `merge`). Parallelize read-only commands only.
+
+## Windows Compatibility
+
+Prefer Git Bash for all `.sh` scripts on Windows. In restricted runners, use explicit wrapper commands under `scripts/windows/`.
+
+Recommended sequence:
+
+1. Run `scripts/windows/doctor.cmd`.
+2. Fix PATH for `git`, `gh`, and `bash` if missing.
+3. Run `scripts/windows/run-feature-flow.cmd`.
+
+When `bash` is not in PATH, set `GIT_BASH` to an explicit `bash.exe` location.
+
+## Manual Fallback Checklist
+
+Use this fallback path when orchestration cannot run end-to-end:
+
+1. Run preflight.
+2. Create worktree.
+3. Sync worktree with base branch.
+4. Generate PR body.
+5. Open PR using `--body-file`.
+6. Merge only after checks pass.
+7. Clean up worktree.
+
 ## Edge Cases
 
 ### Detached HEAD
@@ -274,3 +321,5 @@ Reference files:
 - `references/conflict-playbook.md`
 - `references/merge-policy.md`
 - `references/pr-template.md`
+- `CHANGELOG.md`
+- `VERSION`
