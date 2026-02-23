@@ -39,9 +39,32 @@ Use bundled scripts in `scripts/` for deterministic execution:
 - `scripts/preflight-check.sh` - repository, branch, remote, and `gh` readiness checks.
 - `scripts/create-worktree.sh` - branch + worktree creation with ignore safeguards.
 - `scripts/sync-worktree.sh` - fetch + rebase branch onto base branch.
+- `scripts/generate-pr-body.sh` - compatibility-aware PR body generation.
 - `scripts/open-pr.sh` - push and create or reuse pull requests.
 - `scripts/merge-pr.sh` - merge pull request with checks and queue support.
 - `scripts/cleanup-worktree.sh` - safe worktree removal and prune.
+- `scripts/run-feature-flow.sh` - orchestration wrapper for preflight to PR (and optional merge).
+
+## One-Command Orchestration
+
+Run the complete flow from the repository root:
+
+```bash
+bash .agents/skills/worktree-feature-execution/scripts/run-feature-flow.sh \
+  --feature "add billing retries" \
+  --base "current-branch" \
+  --pr-base "main" \
+  --prefix "feat" \
+  --summary "Improve retry reliability for transient payment failures"
+```
+
+Optional flags:
+
+- `--draft` to create draft PR.
+- `--merge --queue --merge-method squash` to queue merge after PR creation.
+- `--no-pr` to stop after worktree creation and sync.
+- `--setup auto|none|"<custom command>"` to control setup behavior.
+- `--issue <number>` to append closing issue reference in PR body.
 
 ## Standard Workflow
 
@@ -125,6 +148,24 @@ Behavior:
 - Reuse open PR when one already exists.
 - Create PR when missing.
 - Return PR URL.
+
+### 5a) Generate PR Body Template
+
+Run in the worktree:
+
+```bash
+bash .agents/skills/worktree-feature-execution/scripts/generate-pr-body.sh \
+  --base "main" \
+  --feature "add billing retries" \
+  --risk "medium" \
+  --output ".git/PR_BODY.md"
+```
+
+Behavior:
+
+- Build compatibility-aware PR content from git diff context.
+- Include commit and changed-file counts against base.
+- Add risk and rollback sections.
 
 ### 6) Merge Pull Request
 
@@ -232,3 +273,4 @@ Reference files:
 - `references/branch-naming.md`
 - `references/conflict-playbook.md`
 - `references/merge-policy.md`
+- `references/pr-template.md`

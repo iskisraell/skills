@@ -6,7 +6,9 @@
 ## Findings
 
 - Existing public worktree skills are typically CLAUDE.md-oriented and need AGENTS.md adaptation.
+- Skills.sh leaderboard listing is telemetry-driven and appears after `npx skills add <owner/repo>` installs.
 
 ## Session Notes
 
 - Goal: ship an AGENTS-native worktree + PR + merge automation skill with robust edge-case coverage.
+- Added `run-feature-flow.sh` and `generate-pr-body.sh` for one-command execution plus structured PR content.

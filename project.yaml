@@ -23,6 +23,8 @@ scripts:
   preflight: .agents/skills/worktree-feature-execution/scripts/preflight-check.sh
   create_worktree: .agents/skills/worktree-feature-execution/scripts/create-worktree.sh
   sync_worktree: .agents/skills/worktree-feature-execution/scripts/sync-worktree.sh
+  generate_pr_body: .agents/skills/worktree-feature-execution/scripts/generate-pr-body.sh
   open_pr: .agents/skills/worktree-feature-execution/scripts/open-pr.sh
   merge_pr: .agents/skills/worktree-feature-execution/scripts/merge-pr.sh
   cleanup_worktree: .agents/skills/worktree-feature-execution/scripts/cleanup-worktree.sh
+  run_feature_flow: .agents/skills/worktree-feature-execution/scripts/run-feature-flow.sh

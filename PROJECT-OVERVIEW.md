@@ -16,12 +16,15 @@ skills/
           branch-naming.md
           conflict-playbook.md
           merge-policy.md
+          pr-template.md
         scripts/
           cleanup-worktree.sh
           create-worktree.sh
+          generate-pr-body.sh
           merge-pr.sh
           open-pr.sh
           preflight-check.sh
+          run-feature-flow.sh
           sync-worktree.sh
   AGENTS.md
   AGENT-EDITABLE.md
@@ -45,9 +48,10 @@ skills/
 2. Run preflight checks.
 3. Create isolated worktree from configured base branch.
 4. Implement feature and sync branch with base.
-5. Push branch and create PR with `gh`.
-6. Merge policy checks.
-7. Merge to `main` and cleanup worktree.
+5. Generate PR body template from diff metadata.
+6. Push branch and create PR with `gh`.
+7. Merge policy checks.
+8. Merge to `main` and cleanup worktree.
 
 ## Design decisions
 
