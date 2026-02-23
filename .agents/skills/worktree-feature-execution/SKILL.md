@@ -1,7 +1,7 @@
 ---
 name: worktree-feature-execution
 description: This skill should be used when the user asks to "implement a feature in an isolated worktree", "create a worktree from the current project branch", "open a PR from worktree changes", "merge feature PRs into main", "run multiple agents in parallel worktrees", or "handle worktree merge conflicts and incompatibilities".
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Worktree Feature Execution
@@ -247,6 +247,21 @@ Recommended sequence:
 
 When `bash` is not in PATH, set `GIT_BASH` to an explicit `bash.exe` location.
 
+### PATH-Degraded `cmd` Sessions
+
+If `git --version` or `where git` returns "not recognized", treat this as a broken `PATH` session.
+
+Run `scripts/windows/doctor.cmd --json`, resolve absolute executables, and execute with explicit paths only:
+
+- `git`: `%LOCALAPPDATA%\Programs\Git\cmd\git.exe`, then `%ProgramFiles%\Git\cmd\git.exe`
+- `bash`: `%LOCALAPPDATA%\Programs\Git\bin\bash.exe`, then `%ProgramFiles%\Git\bin\bash.exe`
+- `gh`: `%USERPROFILE%\scoop\shims\gh.exe`, then `%ProgramFiles%\GitHub CLI\gh.exe`
+- `bun`: `%USERPROFILE%\.bun\bin\bun.exe`
+
+Set `GIT_EXE`, `BASH_EXE`, `GH_EXE`, and `BUN_EXE`, then run all workflow steps with those explicit binaries.
+
+If any required executable cannot be resolved, stop and report the missing tool plus checked paths.
+
 ## Manual Fallback Checklist
 
 Use this fallback path when orchestration cannot run end-to-end:
@@ -296,6 +311,10 @@ Use `--queue` flow and avoid direct merge bypass.
 ### Permission Errors
 
 Stop and report required `gh` scope or repository role.
+
+### PATH-Degraded Shell
+
+On Windows `cmd`, if command discovery is unavailable, bypass PATH-dependent invocations and run with resolved absolute executable paths.
 
 ## Red Flags
 
